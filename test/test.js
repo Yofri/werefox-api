@@ -1,50 +1,72 @@
 const socket = require('socket.io-client')("http://localhost:3000");
 
-let testEmit = 'hellow'
+// let testEmit = 'hellow'
 
 test('chat message emitted',()=>{
   socket.on('connection', () =>{
     
   })
   socket.emit('chat', 'Hello World')
-    console.log('helolhleheolo');
-    socket.on('chat', (msg)=>{
-      console.log(msg);
-      testEmit = msg
-      console.log(testEmit);
-      expect(testEmit).toMatch('hello');
-    })
     
+    // console.log('helolhleheolo');
+    socket.on('chat',async (msg)=>{
+      // console.log(msg);
+      const testEmit = await msg
+      // console.log(testEmit);
+      expect(testEmit).toBe('Hello World');
+    })
 })
 
 test('invalid username (empty) validated', ()=>{
-  socket.emit('username',undefined, (msg)=> {
-    socket.on('error', (err)=>{
-      expect(err).toBe("Username cannot empty")
+  // console.log('masuk invalid username test');
+  socket.on('connection', () =>{})
+  // socket.emit('username',undefined)
+    socket.on('gagal', async (err)=>{
+      const testErr = await err
+      // console.log(testErr);
+      expect(testErr).toBe("Username cannot empty")
     })
-  })
 })
 // 
-// test('expect to return array of player names', ()=>{
-//   socket.emit('arrayPlayers', ['user1','user2','user3','user4','user5'], (array)=> {
-//     socket.on('arrayPlayers', (array)=>{
-//       expect(array).toBe(['user1','user2','user3','user4','user6'])
-//     })
-//   })
-// })
 
-// test('expect to return 3 fox' , () =>[
-//  socket.emit('arrayPlayers', ['user1','user2','user3','user4','user5'], (array)=>{
-//    let role = Math.floor(Math.random() * ((array.length-1) - 1)) + 1;
-//     array[role] = 'fox'
-//     expect(array[role]).toBe('fox');
-//    }) 
-// ])
+test('at game start, array of players must contain property role' , () =>{
+  socket.on('connection', () =>{})
+  // socket.emit('gameStart')
+    socket.on('gameStart', async (users) =>{
+      const usersArray = await users
+      for(let i = 0 ; i < usersArray.length ; i++){
+        expect(usersArray[i]).objectContaining({
+          role : expect.not.toMatch('')
+        })
+      }
+  })
+})
 
-// test('1+1 = 3', () =>{
-//   console.log('hellow')
-//   expect(1+1).toBe(2)
-// })
+
+test('emit userId when player is connected', () =>{
+  socket.on('connection', ()=>{})
+  socket.on('userId' , async (id)=>{
+    const checkUserId = await id
+    expect(checkUserId).not.toMatch('')
+  })
+})
+
+test('expect client to pass /skill',()=>{
+  socket.on('connection', ()=>{})
+  socket.on('useSkill', async (data)=>{
+    const checkSkill = await data
+    expect(checkSkill).not.toMatch('')
+  })
+})
+
+test('expect user to use appropriate skill', ()=>{
+  socket.on('connection' , ()=>{})
+  socket.on('useSkill', async(data)=>{
+    const userRole = data
+    
+  })
+})
+
 
 
   
