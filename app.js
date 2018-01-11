@@ -5,6 +5,7 @@ var io = require('socket.io')(http);
 const user = []
 
 io.on('connection', function(socket){
+  console.log('hello hello');
   socket.on('username', (username) => {
     if (user.indexOf(username) == -1 ) {
       if (username) {
@@ -17,6 +18,7 @@ io.on('connection', function(socket){
     }
   })
   socket.on('chat', message => {
+    console.log('masuk chat' , message);
     io.emit('chat', message);
   })
 });
