@@ -2,8 +2,17 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+var CronJob = require('cron').CronJob;
+// new CronJob('* */2 * * * *', function() {
+//   console.log('You will see this message every second');
+// }, null, true, 'Asia/Jakarta');
+
+
+
+
+
 // Before play begin
-const role = {werewolf, villager}
+// const role = {werewolf, villager}
 let user = []
 
 // Preparation befor playing
@@ -12,8 +21,28 @@ let liveUser = []
 
 let toBeExecute = []
 let isstart = false;
+let isDay = false
+let timeZone = 'Asia/Jakarta'
+
 
 io.on('connection', function(socket){
+  var job = new CronJob('* */2 * * * *', function() {
+    console.log('cron jalan');
+     isDay = !isDay
+     console.log(isDay);
+     socket.emit('isDay', isDay)
+     if(user.length == 2){
+      //  job.stop()
+     }
+    }, function () {
+      /* This function is executed when the job stops */
+      isstart = false
+    },
+    false, /* Start the job right now */
+    timeZone /* Time zone of this job. */
+  );
+
+
 
   //Ini ngemit socket.id ke client, fungsinya biar tau siapa yang ngirim
   socket.emit('userId', socket.id)
@@ -40,12 +69,13 @@ io.on('connection', function(socket){
   })
 
   //Ini ketika chatting
-  socket.on('chat', message => {
+  socket.on('chat', msg => {
 
     if (msg[0]!='/') {
-      io.emit('chat', message);
+      io.emit('chat', msg);
     } else {
       if (msg == '/start') {
+        job.start()
         isstart = true;
         liveUser = user
         let randNum = Math.floor(Math.random() * ((user.length-1) - 0)) + 0
@@ -55,7 +85,10 @@ io.on('connection', function(socket){
             user[i].role = 'villager'
           }
         }
+        console.log(user);
+        socket.emit('gameStart', user)
       } else if (msg == '/skill') {
+        //skill abis itu namanya user
         let arrMsg = msg.split('')
         let werewolf = ''
         for (var i = 0; i < user.length; i++) {
@@ -76,22 +109,28 @@ io.on('connection', function(socket){
         } else {
          //Voting eksekusi
          toBeExecute.push(arrMsg[1])
+         //kalau malam, cek siapa tereksekusi paling banyak, nanti splice
+         let counter = 0
+         let index = 0
+         let max = 0
+         for (var i = 0; i < toBeExecute.length; i++) {
+           for (var j = i; j < toBeExecute.length; j++) {
+             if (toBeExecute[i] == toBeExecute[j]) {
+               counter++
+             }
+             if(counter > max){
+               max = counter
+               index = i
+             }
+           }
+           counter = 0
+         }
+         user.splice(index , 1)
         }
       }
     }
   })
-
-  //kalau malam, cek siapa tereksekusi paling banyak, nanti splice
-  let counter = 0
-  let index = 0
-  for (var i = 0; i < toBeExecute.length; i++) {
-    for (var j = 0; j < toBeExecute.length; j++) {
-      if (toBeExecute[i] == toBeExecute[j]) {
-        counter++
-      }
-    }
-  }
-
+  
   socket.on('disconnect', ()=>{
     
 
