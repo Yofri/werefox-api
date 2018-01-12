@@ -16,8 +16,9 @@ var CronJob = require('cron').CronJob;
 let user = []
 
 // Preparation befor playing
-let userRole = []
-let liveUser = []
+
+let werewolfId = ''
+let villagerId = []
 
 let toBeExecute = []
 let isstart = false;
@@ -31,12 +32,41 @@ io.on('connection', function(socket){
      isDay = !isDay
      console.log(isDay);
      socket.emit('isDay', isDay)
+     if(isDay){
+       socket.emit('chat', `Silahkan voting untuk menentukan werewolf`)
+     }
+     else{
+       socket.emit('chat', 'Malam sudah tiba, gunakan skill mu')
+       
+       user.forEach(u=>{
+         if(u.role == 'werewolf'){
+           werewolfId = u.id
+           io.to(werewolfId).emit('werewolfWelcome','Kamu adalah werewolf! ketik /skill (username) untuk memburu teman kalian')
+         }
+         else{
+           villagerId.push(u.id)
+           io.to(u.id).emit('villagerWelcome', 'Kamu adalah villager! Perhatikan siapa yang diburu dan temukan werewolfnya')
+         }
+       })
+
+     }
      if(user.length == 2){
       //  job.stop()
      }
     }, function () {
       /* This function is executed when the job stops */
       isstart = false
+      socket.emit('chat', "Game Over")
+      let winner = ''
+      user.forEach(pemain=>{
+        if(pemain.role != 'werewolf'){
+          winner = 'Villager wins!'
+        }
+        else{
+          winner = "Werewolf is the winner"
+        }
+      })
+      socket.emit('chat', winner)
     },
     false, /* Start the job right now */
     timeZone /* Time zone of this job. */
