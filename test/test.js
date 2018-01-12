@@ -1,6 +1,10 @@
 const socket = require('socket.io-client')("http://localhost:3000");
 
 // let testEmit = 'hellow'
+global.console = {
+  warn: jest.fn(),
+  log: jest.fn()
+}
 
 test('chat message emitted',()=>{
   socket.on('connection', () =>{
@@ -20,7 +24,7 @@ test('chat message emitted',()=>{
 test('invalid username (empty) validated', ()=>{
   // console.log('masuk invalid username test');
   socket.on('connection', () =>{})
-  // socket.emit('username',undefined)
+  socket.emit('username','player1')
     socket.on('gagal', async (err)=>{
       const testErr = await err
       // console.log(testErr);
@@ -31,6 +35,7 @@ test('invalid username (empty) validated', ()=>{
 
 test('at game start, array of players must contain property role' , () =>{
   socket.on('connection', () =>{})
+  
   // socket.emit('gameStart')
     socket.on('gameStart', async (users) =>{
       const usersArray = await users
@@ -64,6 +69,19 @@ test('expect user to use appropriate skill', ()=>{
   socket.on('useSkill', async(data)=>{
     const userRole = data
     
+  })
+})
+
+test('expect cron to start when game start', ()=>{
+  socket.on('connection', ()=>{})
+  socket.emit('username','player1')
+  socket.emit('chat', '/start')
+  socket.on('chat', async (msg)=>{
+    const checkMsg = await msg
+    console.log(msg);
+    if(checkMsg == '/start'){
+      expect(global.console.log).toHaveBeenCalledWith('cron jalan')
+    }
   })
 })
 
