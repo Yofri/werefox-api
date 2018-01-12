@@ -72,14 +72,13 @@ test('expect user to use appropriate skill', ()=>{
   })
 })
 
-test('expect cron to start when game start', ()=>{
+test('expect cron to start when game start and emit msg', ()=>{
   socket.on('connection', ()=>{})
   socket.emit('username','player1')
   socket.emit('chat', '/start')
   socket.on('chat', async (msg)=>{
     const checkMsg = await msg
     console.log(msg);
-  socket.on('gameStart' , async (user))
   })
 })
 
@@ -95,7 +94,7 @@ test('expect cron to emit day status to client', ()=>{
 test('expect server to emit user array', ()=>{
   socket.on('connection' , ()=>{})
   socket.emit('username','player1')
-  socket.emit('username','player2')
+  // socket.emit('username','player2')
   socket.on('gameStart', async (user)=>{
     const userArray = await user
     console.log('ini user array -------------------->', userArray);
@@ -109,6 +108,32 @@ test('expect server to emit user array', ()=>{
 //   socket.on
 // })
 
+test('expect cron to emit welcome message' , ()=>{
+  socket.on('connection',()=>{})
+  socket.emit('username' , 'player1')
+  // socket.emit('username' , 'player2')
+  socket.on('werewolfWelcome' , async (msg)=>{
+    const wolfMsg = await msg
+    console.log(msg);
+    expect(msg).toBe('Kamu adalah werewolf! ketik /skill (username) untuk memburu teman kalian')
+  })
+  socket.on('villagerWelcome' , async (msgV)=>{
+    const vilMsg = await msgV
+    console.log(msgV);
+    expect(msgV).toBe('test')
+  })
+})
+
+test('expect to see night message through cron' , ()=>{
+  socket.on('connection' , ()=>{})
+  socket.emit('username' , 'player1')
+  // socket.emit('username' , 'player2')
+  socket.on('chatNight', async (niteMsgs)=>{
+    const niteMsg = await niteMsgs
+    console.log(niteMsg);
+    expect(niteMsg).toBe('hello')
+  })
+})
 
 
   
