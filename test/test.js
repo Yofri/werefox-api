@@ -79,9 +79,16 @@ test('expect cron to start when game start', ()=>{
   socket.on('chat', async (msg)=>{
     const checkMsg = await msg
     console.log(msg);
-    if(checkMsg == '/start'){
       expect(global.console.log).toHaveBeenCalledWith('cron jalan')
-    }
+  })
+})
+
+test('expect cron to emit day status to client', ()=>{
+  socket.on('connection' , ()=>{})
+  socket.emit('username','player1')
+  socket.on('isDay', async (status)=>{
+    const checkStatus = await status
+    expect(checkStatus).toBe(true || false)
   })
 })
 

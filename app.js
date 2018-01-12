@@ -30,6 +30,7 @@ io.on('connection', function(socket){
     console.log('cron jalan');
      isDay = !isDay
      console.log(isDay);
+     socket.emit('isDay', isDay)
      if(user.length == 2){
       //  job.stop()
      }
