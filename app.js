@@ -5,20 +5,26 @@ var io = require('socket.io')(http);
 const user = []
 
 io.on('connection', function(socket){
+  console.log('hello hello');
   socket.on('username', (username) => {
-    if (user.indexOf(username) == -1 ) {
-      if (username) {
-        user.push(username)
-      } else {
-        socket.emit('error', 'Username cannot empty')
-      }
+    if (username) {
+      user.push(username)
     } else {
-      socket.emit('error', 'Username already taken')
+      console.log('masuk emit');
+      let errMsg = 'Username cannot empty'
+      socket.emit('gagal', errMsg)
+    }
+    if (user.indexOf(username) == -1 ) {
+
+    } else {
+      socket.emit('gagal2', 'Username already taken')
     }
   })
   socket.on('chat', message => {
+    console.log('masuk chat' , message);
     io.emit('chat', message);
   })
+  
 });
 
 http.listen(3000, function(){
