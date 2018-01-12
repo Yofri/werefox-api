@@ -32,23 +32,34 @@ io.on('connection', function(socket){
      isDay = !isDay
      console.log(isDay);
      socket.emit('isDay', isDay)
+     socket.broadcast.emit('isDay', isDay)
+     user.forEach(u=>{
+       if(u.role == 'werewolf'){
+         werewolfId = u.id
+         
+       }
+       else{
+         villagerId.push(u.id)
+         
+       }
+     })
      if(isDay){
-       socket.emit('chat', `Silahkan voting untuk menentukan werewolf`)
+       let liveUser = []
+       user.forEach(u => {
+         liveUser.push(u.username)
+       })
+       socket.emit('chat', '|Daftar pemain yang masih hidup'+liveUser)
+       socket.broadcast.emit('chat', '|Daftar pemain yang masih hidup'+liveUser)
+       socket.emit('chat', `|Silahkan diskusi untuk menentukan werewolf`)
+       socket.broadcast.emit('chat', `|Silahkan diskusi untuk menentukan werewolf`)
+       villagerId.forEach(warga=>{
+         io.to(warga).emit('chat', '|Ketik /skill (username) untuk mengeksekusi teman kalian')
+       })
      }
      else{
-       socket.emit('chat', 'Malam sudah tiba, gunakan skill mu')
-       
-       user.forEach(u=>{
-         if(u.role == 'werewolf'){
-           werewolfId = u.id
-           io.to(werewolfId).emit('werewolfWelcome','Kamu adalah werewolf! ketik /skill (username) untuk memburu teman kalian')
-         }
-         else{
-           villagerId.push(u.id)
-           io.to(u.id).emit('villagerWelcome', 'Kamu adalah villager! Perhatikan siapa yang diburu dan temukan werewolfnya')
-         }
-       })
-
+       socket.emit('chat', '|Malam sudah tiba, hati-hati werewolf')
+       socket.broadcast.emit('chat', '|Malam sudah tiba, hati-hati werewolf')
+       io.to(werewolfId).emit('chat','|Ketik /skill (username) untuk memburu teman kalian')
      }
      if(user.length == 2){
       //  job.stop()
@@ -56,17 +67,21 @@ io.on('connection', function(socket){
     }, function () {
       /* This function is executed when the job stops */
       isstart = false
-      socket.emit('chat', "Game Over")
+      socket.emit('chat', "|Game Over")
+      socket.broadcast.emit('chat', "|Game Over")
+      
       let winner = ''
       user.forEach(pemain=>{
         if(pemain.role != 'werewolf'){
-          winner = 'Villager wins!'
+          winner = '|Villager wins!'
         }
         else{
-          winner = "Werewolf is the winner"
+          winner = "|Werewolf is the winner"
         }
       })
       socket.emit('chat', winner)
+      socket.broadcast.emit('chat', winner)
+      
     },
     false, /* Start the job right now */
     timeZone /* Time zone of this job. */
@@ -87,13 +102,13 @@ io.on('connection', function(socket){
             username: username
           })
         } else {
-          socket.emit('errors', 'Game already started')
+          socket.emit('errors', '|Game already started')
         }
       } else {
-        socket.emit('errors', 'Username cannot empty')
+        socket.emit('errors', '|Username cannot empty')
       }
     } else {
-      socket.emit('errors', 'Username already taken')
+      socket.emit('errors', '|Username already taken')
 
     }
   })
@@ -101,7 +116,7 @@ io.on('connection', function(socket){
   //Ini ketika chatting
   socket.on('chat', msg => {
 
-    if (msg[0]!='/') {
+    if (msg.split('|')[1][0]!='/') {
       io.emit('chat', msg);
     } else {
       if (msg == '/start') {
@@ -116,8 +131,14 @@ io.on('connection', function(socket){
           }
         }
         console.log(user);
-        socket.emit('gameStart', user)
-      } else if (msg == '/skill') {
+        socket.emit('chat', '|Game started')
+        socket.broadcast.emit('chat', '|Game started')
+        
+        villagerId.forEach(warga=>{
+          io.to(warga).emit('chat', '|Kamu adalah villager!')
+        })
+        io.to(werewolfId).emit('chat','|Kamu adalah werewolf!')
+      } else if (msg.split('|')[1] == '/skill') {
         //skill abis itu namanya user
         let arrMsg = msg.split('')
         let werewolf = ''
@@ -136,26 +157,32 @@ io.on('connection', function(socket){
             }
           }
           user.splice(killTarget, 1)
+          socket.emit('chat', '|Skill telah digunakan')
         } else {
          //Voting eksekusi
          toBeExecute.push(arrMsg[1])
-         //kalau malam, cek siapa tereksekusi paling banyak, nanti splice
-         let counter = 0
-         let index = 0
-         let max = 0
-         for (var i = 0; i < toBeExecute.length; i++) {
-           for (var j = i; j < toBeExecute.length; j++) {
-             if (toBeExecute[i] == toBeExecute[j]) {
-               counter++
+         setTimeout(function () {
+           let counter = 0
+           let index = 0
+           let max = 0
+           for (var i = 0; i < toBeExecute.length; i++) {
+             for (var j = i; j < toBeExecute.length; j++) {
+               if (toBeExecute[i] == toBeExecute[j]) {
+                 counter++
+               }
+               if(counter > max){
+                 max = counter
+                 index = i
+               }
              }
-             if(counter > max){
-               max = counter
-               index = i
-             }
+             counter = 0
            }
-           counter = 0
-         }
-         user.splice(index , 1)
+           socket.broadcast.emit('chat', `|${user[index].username} telah dimecinin`)
+           user.splice(index , 1)
+          }, 60000)
+         //kalau malam, cek siapa tereksekusi paling banyak, nanti splice
+         
+         socket.emit('chat', '|Kamu telah voting untuk mengeksekusi')
         }
       }
     }
