@@ -85,6 +85,8 @@ io.on('connection', function(socket){
             user[i].role = 'villager'
           }
         }
+        console.log(user);
+        socket.emit('gameStart', user)
       } else if (msg == '/skill') {
         //skill abis itu namanya user
         let arrMsg = msg.split('')

@@ -79,7 +79,7 @@ test('expect cron to start when game start', ()=>{
   socket.on('chat', async (msg)=>{
     const checkMsg = await msg
     console.log(msg);
-      expect(global.console.log).toHaveBeenCalledWith('cron jalan')
+  socket.on('gameStart' , async (user))
   })
 })
 
@@ -88,9 +88,26 @@ test('expect cron to emit day status to client', ()=>{
   socket.emit('username','player1')
   socket.on('isDay', async (status)=>{
     const checkStatus = await status
-    expect(checkStatus).toBe(true || false)
+    expect(checkStatus).toBe(true)
   })
 })
+
+test('expect server to emit user array', ()=>{
+  socket.on('connection' , ()=>{})
+  socket.emit('username','player1')
+  socket.emit('username','player2')
+  socket.on('gameStart', async (user)=>{
+    const userArray = await user
+    console.log('ini user array -------------------->', userArray);
+    expect(typeof userArray).toBe('object')
+  })
+})
+
+// test('expect to see username after login' , ()=>{
+//   socket.on('connection' , ()=>{})
+//   socket.emit('username' , 'player1')
+//   socket.on
+// })
 
 
 
