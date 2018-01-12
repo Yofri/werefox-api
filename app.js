@@ -14,6 +14,7 @@ let toBeExecute = []
 let isstart = false;
 
 io.on('connection', function(socket){
+
   //Ini ngemit socket.id ke client, fungsinya biar tau siapa yang ngirim
   socket.emit('userId', socket.id)
 
@@ -34,11 +35,13 @@ io.on('connection', function(socket){
       }
     } else {
       socket.emit('errors', 'Username already taken')
+
     }
   })
 
   //Ini ketika chatting
   socket.on('chat', message => {
+
     if (msg[0]!='/') {
       io.emit('chat', message);
     } else {
@@ -91,7 +94,9 @@ io.on('connection', function(socket){
 
   socket.on('disconnect', ()=>{
     
+
   })
+  
 });
 
 http.listen(3000, function(){
